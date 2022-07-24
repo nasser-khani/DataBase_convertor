@@ -161,6 +161,70 @@ foreach ($mtables as $table) {
 
     <link href="./bootstrap.min.css" rel="stylesheet">
     <script src="./bootstrap.bundle.min.js"></script>
+
+    <script language="Javascript" type="text/javascript" src="./edit_area/edit_area_full.js"></script>
+    <script language="Javascript" type="text/javascript">
+        // callback functions
+        function my_save(id, content) {
+            alert("Here is the content of the EditArea '" + id + "' as received by the save callback function:\n" + content);
+        }
+
+        function my_load(id) {
+            editAreaLoader.setValue(id, "The content is loaded from the load_callback function into EditArea");
+        }
+
+        function test_setSelectionRange(id) {
+            editAreaLoader.setSelectionRange(id, 100, 150);
+        }
+
+        function test_getSelectionRange(id) {
+            var sel = editAreaLoader.getSelectionRange(id);
+            alert("start: " + sel["start"] + "\nend: " + sel["end"]);
+        }
+
+        function test_setSelectedText(id) {
+            text = "[REPLACED SELECTION]";
+            editAreaLoader.setSelectedText(id, text);
+        }
+
+        function test_getSelectedText(id) {
+            alert(editAreaLoader.getSelectedText(id));
+        }
+
+        function editAreaLoaded(id) {
+            if (id == "example_2") {
+                open_file1();
+                open_file2();
+            }
+        }
+
+        function open_file1() {
+            var new_file = {
+                id: "to\\ é # € to",
+                text: "$authors= array();\n$news= array();",
+                syntax: 'php',
+                title: 'beautiful title'
+            };
+            editAreaLoader.openFile('example_2', new_file);
+        }
+
+        function open_file2() {
+            var new_file = {
+                id: "Filename",
+                text: "<a href=\"toto\">\n\tbouh\n</a>\n<!-- it's a comment -->",
+                syntax: 'html'
+            };
+            editAreaLoader.openFile('example_2', new_file);
+        }
+
+        function close_file1() {
+            editAreaLoader.closeFile('example_2', "to\\ é # € to");
+        }
+
+        function toogle_editable(id) {
+            editAreaLoader.execCommand(id, 'set_editable', !editAreaLoader.execCommand(id, 'is_editable'));
+        }
+    </script>
 </head>
 
 <body class="bg-light" dir="rtl">
@@ -172,15 +236,37 @@ foreach ($mtables as $table) {
                 <!-- <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p> -->
             </div>
 
-            <div class="row g-5 mt-3 mb-3">
+            <div class="row g-5 mb-3">
 
                 <?php foreach ($DB as $key => $value) { ?>
+                    <script language="Javascript" type="text/javascript">
+                        editAreaLoader.init({
+                            id: "CREATE_TABLE_<?= $key ?>", // id of the textarea to transform		
+                            start_highlight: true, // if start with highlight
+                            allow_resize: "both",
+                            allow_toggle: true,
+                            word_wrap: true,
+                            language: "en",
+                            syntax: "sql"
+                        });
+                        editAreaLoader.init({
+                            id: "INSERT_INTO_<?= $key ?>", // id of the textarea to transform		
+                            start_highlight: true, // if start with highlight
+                            allow_resize: "both",
+                            allow_toggle: true,
+                            word_wrap: true,
+                            language: "en",
+                            syntax: "sql"
+                        });
+                    </script>
+
+
                     <div class="card">
                         <div class="row card-title p-2">
                             <div class="input-group w-50" dir="ltr">
                                 <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
                                 <span class="input-group-text btn btn-danger" title="حذف">X</span>
-                                <input type="text" class="form-control" placeholder="<?= $key ?>">
+                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" value="<?= $key ?>">
                                 <span class="input-group-text"><?= $key ?></span>
                             </div>
                         </div>
@@ -189,21 +275,21 @@ foreach ($mtables as $table) {
                                 <div class="row g-3">
 
                                     <?php foreach ($value['FILDS'] as $value2) { ?>
-                                        <div class="col-sm-3">
+                                        <div class="col-sm-2">
                                             <label for="firstName" class="form-label"><?= $value2->name ?></label>
-                                            <input type="text" class="form-control" id="firstName" placeholder="" value="<?= $value2->name ?>" required>
+                                            <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="firstName" value="<?= $value2->name ?>" required>
                                         </div>
                                     <?php } ?>
 
 
                                     <div class="row col-12 mt-3">
                                         <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">CREATE_TABLE</label>
-                                            <textarea class="form-control" dir="ltr" name="" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
+                                            <label for="firstName" class="form-label">INSERT_INTO</label>
+                                            <textarea class="form-control" id="INSERT_INTO_<?= $key ?>" dir="ltr" name="INSERT_INTO[<?= $key ?>]" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">INSERT_INTO</label>
-                                            <textarea class="form-control" dir="ltr" name="" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
+                                            <label for="firstName" class="form-label">CREATE_TABLE</label>
+                                            <textarea class="form-control" id="CREATE_TABLE_<?= $key ?>" dir="ltr" name="CREATE_TABLE[<?= $key ?>]" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
                                         </div>
                                     </div>
 
@@ -229,7 +315,6 @@ foreach ($mtables as $table) {
         </footer> -->
 
     </div>
-
 
 </body>
 
