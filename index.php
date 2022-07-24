@@ -269,7 +269,8 @@
                             allow_toggle: true,
                             word_wrap: false,
                             language: "fa",
-                            syntax: "sql"
+                            syntax: "sql",
+                            change_callback: "BASE_SQL"
                         });
                         editAreaLoader.init({
                             id: "INSERT_INTO_<?= $key ?>", // id of the textarea to transform		
@@ -278,7 +279,8 @@
                             allow_toggle: true,
                             word_wrap: false,
                             language: "fa",
-                            syntax: "sql"
+                            syntax: "sql",
+                            change_callback: "BASE_SQL"
                         });
                     </script>
                 <?php } ?>
@@ -352,11 +354,13 @@
                 $(this).val(input_val);
             }
             $(this).closest(".tables").find("textarea").each(function() {
-                var textarea_val = $(this).val().replaceAll(input_old_val, input_val)
-                $(this).val(textarea_val);
+                var id = $(this).attr("id");
+                var textarea_val = editAreaLoader.getValue(id);
+                textarea_val = textarea_val.replaceAll("`" + input_old_val + "`", "`" + input_val + "`");
+                editAreaLoader.setValue(id, textarea_val);
             });
             $(this).attr("old_val", input_val);
-            BASE_SQL();
+            // BASE_SQL();
         });
 
         $(".remove_table").click(function() {
@@ -365,6 +369,7 @@
         });
 
         function BASE_SQL() {
+            alert();
             var sql = '';
             $(".tables textarea").each(function() {
                 sql += editAreaLoader.getValue($(this).attr("id")); //$(this).val();
