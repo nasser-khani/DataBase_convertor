@@ -221,7 +221,7 @@
                         <div class="row card-title p-2">
                             <div class="input-group w-50" dir="ltr">
                                 <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
-                                <span class="input-group-text btn btn-danger" title="حذف">X</span>
+                                <span class="input-group-text btn btn-danger remove_table" title="حذف">X</span>
                                 <input type="text" name="table_name[<?= $key ?>]" class="form-control" old_val="<?= $key ?>" value="<?= $key ?>">
                                 <span class="input-group-text"><?= $key ?></span>
                             </div>
@@ -262,7 +262,7 @@
                 <?php } ?>
 
 
-                <div class="row col-sm-12 d-none">
+                <div class="row col-sm-12 d-none0">
                     <label for="" class="form-label">SQL</label>
                     <textarea class="form-control" id="ALL_SQL_" dir="ltr" name="ALL_SQL" id="" rows="20" required><?= $contents ?></textarea>
                 </div>
@@ -335,6 +335,15 @@
             $(this).attr("old_val", input_val);
 
 
+            var sql = '';
+            $(".tables textarea").each(function() {
+                sql += $(this).val();
+            });
+            $("#ALL_SQL_").val(sql);
+        });
+
+        $(".remove_table").click(function() {
+            $(this).closest(".tables").remove();
             var sql = '';
             $(".tables textarea").each(function() {
                 sql += $(this).val();
