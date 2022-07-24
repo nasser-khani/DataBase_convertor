@@ -219,7 +219,11 @@ foreach ($mtables as $table) {
                     <label for="firstName" class="form-label">SQL</label>
                     <textarea class="form-control" id="ALL_SQL_" dir="ltr" name="ALL_SQL" id="" rows="20" required><?= $contents ?></textarea>
                 </div>
-
+                <div class="row m-5 d-flex align-items-end justify-content-end">
+                    <div class="row col-sm-2">
+                        <a class="btn btn-info save_file">ذخیره</a>
+                    </div>
+                </div>
 
             </div>
         </main>
@@ -250,6 +254,22 @@ foreach ($mtables as $table) {
             language: "fa",
             syntax: "sql"
         });
+
+        $(".save_file").click(function() {
+            const d = new Date();
+            download("<?= $options['db_to_backup'] ?>_" + d + ".sql", editAreaLoader.getValue("ALL_SQL_"));
+        });
+
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
 
         // callback functions
         function my_save(id, content) {
