@@ -8,6 +8,8 @@
     <link rel="fluid-icon" href="./fluidicon.png" title="GitHub">
 
     <link href="./bootstrap.min.css" rel="stylesheet">
+    <script language="Javascript" type="text/javascript" src="./edit_area/edit_area_full.js"></script>
+
 </head>
 
 <body class="bg-light" dir="rtl">
@@ -220,13 +222,13 @@
                     <div class="card tables">
                         <div class="row card-title p-2">
                             <div class="input-group w-50" dir="ltr">
-                                <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
+                                <!-- <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a> -->
                                 <span class="input-group-text btn btn-danger remove_table" title="حذف">X</span>
                                 <input type="text" name="table_name[<?= $key ?>]" class="form-control" old_val="<?= $key ?>" value="<?= $key ?>">
                                 <span class="input-group-text"><?= $key ?></span>
                             </div>
                         </div>
-                        <div class="collapse multi-collapse show0" id="<?= $key ?>">
+                        <div class="collapse multi-collapse show" id="<?= $key ?>">
                             <div class="card card-body mb-3">
                                 <div class="row g-3">
 
@@ -234,7 +236,7 @@
 
                                         <div class="col-sm-3">
                                             <div class="input-group" dir="ltr">
-                                                <span class="input-group-text btn btn-danger" title="حذف">X</span>
+                                                <!-- <span class="input-group-text btn btn-danger" title="حذف">X</span> -->
                                                 <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="" old_val="<?= $value2->name ?>" value="<?= $value2->name ?>" required>
                                                 <span class="input-group-text"><?= $value2->name ?></span>
                                             </div>
@@ -259,11 +261,31 @@
                             </div>
                         </div>
                     </div>
+                    <script>
+                        editAreaLoader.init({
+                            id: "CREATE_TABLE_<?= $key ?>", // id of the textarea to transform		
+                            start_highlight: true, // if start with highlight
+                            allow_resize: "both",
+                            allow_toggle: true,
+                            word_wrap: false,
+                            language: "fa",
+                            syntax: "sql"
+                        });
+                        editAreaLoader.init({
+                            id: "INSERT_INTO_<?= $key ?>", // id of the textarea to transform		
+                            start_highlight: true, // if start with highlight
+                            allow_resize: "both",
+                            allow_toggle: true,
+                            word_wrap: false,
+                            language: "fa",
+                            syntax: "sql"
+                        });
+                    </script>
                 <?php } ?>
 
 
                 <div class="row col-sm-12 d-none0">
-                    <label for="" class="form-label">SQL</label>
+                    <!-- <label for="" class="form-label">SQL</label> -->
                     <textarea class="form-control" id="ALL_SQL_" dir="ltr" name="ALL_SQL" id="" rows="20" required><?= $contents ?></textarea>
                 </div>
 
@@ -290,7 +312,6 @@
 
     <script src="./jquery.js"></script>
     <script src="./bootstrap.bundle.min.js"></script>
-    <script language="Javascript" type="text/javascript" src="./edit_area/edit_area_full.js"></script>
 
     <script language="Javascript" type="text/javascript">
         // editAreaLoader.init({
@@ -303,6 +324,7 @@
         //     syntax: "sql"
         // });
 
+        /*
         $("[data-bs-toggle]").click(function() {
             if (!$(this).hasClass("opened")) {
                 $(this).closest(".tables").find("textarea").each(function() {
@@ -320,6 +342,7 @@
                 $(this).addClass("opened");
             }
         });
+        */
 
         $(".tables input").change(function() {
             var input_old_val = $(this).attr("old_val");
@@ -333,24 +356,21 @@
                 $(this).val(textarea_val);
             });
             $(this).attr("old_val", input_val);
-
-
-            var sql = '';
-            $(".tables textarea").each(function() {
-                sql += $(this).val();
-            });
-            $("#ALL_SQL_").val(sql);
+            BASE_SQL();
         });
 
         $(".remove_table").click(function() {
             $(this).closest(".tables").remove();
-            var sql = '';
-            $(".tables textarea").each(function() {
-                sql += $(this).val();
-            });
-            $("#ALL_SQL_").val(sql);
+            BASE_SQL();
         });
 
+        function BASE_SQL() {
+            var sql = '';
+            $(".tables textarea").each(function() {
+                sql += editAreaLoader.getValue($(this).attr("id")); //$(this).val();
+            });
+            $("#ALL_SQL_").val(sql);
+        }
 
         $(".save_file").click(function() {
             // $("body").append('<div class="d-flex align-items-center justify-content-center" id="loading">در حال بارگیری ... </div>');
