@@ -158,12 +158,99 @@ foreach ($mtables as $table) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>test</title>
+    <link rel="fluid-icon" href="./fluidicon.png" title="GitHub">
 
     <link href="./bootstrap.min.css" rel="stylesheet">
-    <script src="./bootstrap.bundle.min.js"></script>
+</head>
 
+<body class="bg-light" dir="rtl">
+
+    <div class="container">
+        <main>
+            <div class="py-5 text-center">
+                <h4 dir="ltr"><?= $DB_name ?></h4>
+                <!-- <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p> -->
+            </div>
+
+            <div class="row g-5 mb-3">
+
+                <?php foreach ($DB as $key => $value) { ?>
+                    <div class="card tables">
+                        <div class="row card-title p-2">
+                            <div class="input-group w-50" dir="ltr">
+                                <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
+                                <span class="input-group-text btn btn-danger" title="حذف">X</span>
+                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" value="<?= $key ?>">
+                                <span class="input-group-text"><?= $key ?></span>
+                            </div>
+                        </div>
+                        <div class="collapse multi-collapse show" id="<?= $key ?>">
+                            <div class="card card-body mb-3">
+                                <div class="row g-3">
+
+                                    <?php foreach ($value['FILDS'] as $value2) { ?>
+                                        <div class="col-sm-2">
+                                            <label for="firstName" class="form-label"><?= $value2->name ?></label>
+                                            <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="firstName" value="<?= $value2->name ?>" required>
+                                        </div>
+                                    <?php } ?>
+
+
+                                    <div class="row col-12 mt-3">
+                                        <div class="col-sm-6">
+                                            <label for="firstName" class="form-label">INSERT_INTO</label>
+                                            <textarea class="form-control" id="INSERT_INTO_<?= $key ?>" dir="ltr" name="INSERT_INTO[<?= $key ?>]" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="firstName" class="form-label">CREATE_TABLE</label>
+                                            <textarea class="form-control" id="CREATE_TABLE_<?= $key ?>" dir="ltr" name="CREATE_TABLE[<?= $key ?>]" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+
+
+                <div class="row col-sm-12">
+                    <label for="firstName" class="form-label">SQL</label>
+                    <textarea class="form-control" id="ALL_SQL_" dir="ltr" name="ALL_SQL" id="" rows="20" required><?= $contents ?></textarea>
+                </div>
+
+
+            </div>
+        </main>
+
+        <!-- <footer class="my-5 pt-5 text-muted text-center text-small">
+            <p class="mb-1">© 2017–2022 Company Name</p>
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="#">Privacy</a></li>
+                <li class="list-inline-item"><a href="#">Terms</a></li>
+                <li class="list-inline-item"><a href="#">Support</a></li>
+            </ul>
+        </footer> -->
+
+    </div>
+
+
+    <script src="./jquery.js"></script>
+    <script src="./bootstrap.bundle.min.js"></script>
     <script language="Javascript" type="text/javascript" src="./edit_area/edit_area_full.js"></script>
+
     <script language="Javascript" type="text/javascript">
+        editAreaLoader.init({
+            id: "ALL_SQL_", // id of the textarea to transform		
+            start_highlight: true, // if start with highlight
+            allow_resize: "both",
+            allow_toggle: true,
+            word_wrap: false,
+            language: "fa",
+            syntax: "sql"
+        });
+
         // callback functions
         function my_save(id, content) {
             alert("Here is the content of the EditArea '" + id + "' as received by the save callback function:\n" + content);
@@ -225,97 +312,6 @@ foreach ($mtables as $table) {
             editAreaLoader.execCommand(id, 'set_editable', !editAreaLoader.execCommand(id, 'is_editable'));
         }
     </script>
-</head>
-
-<body class="bg-light" dir="rtl">
-
-    <div class="container">
-        <main>
-            <div class="py-5 text-center">
-                <h4 dir="ltr"><?= $DB_name ?></h4>
-                <!-- <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p> -->
-            </div>
-
-            <div class="row g-5 mb-3">
-
-                <?php foreach ($DB as $key => $value) { ?>
-                    <script language="Javascript" type="text/javascript">
-                        editAreaLoader.init({
-                            id: "CREATE_TABLE_<?= $key ?>", // id of the textarea to transform		
-                            start_highlight: true, // if start with highlight
-                            allow_resize: "both",
-                            allow_toggle: true,
-                            word_wrap: true,
-                            language: "en",
-                            syntax: "sql"
-                        });
-                        editAreaLoader.init({
-                            id: "INSERT_INTO_<?= $key ?>", // id of the textarea to transform		
-                            start_highlight: true, // if start with highlight
-                            allow_resize: "both",
-                            allow_toggle: true,
-                            word_wrap: true,
-                            language: "en",
-                            syntax: "sql"
-                        });
-                    </script>
-
-
-                    <div class="card">
-                        <div class="row card-title p-2">
-                            <div class="input-group w-50" dir="ltr">
-                                <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
-                                <span class="input-group-text btn btn-danger" title="حذف">X</span>
-                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" value="<?= $key ?>">
-                                <span class="input-group-text"><?= $key ?></span>
-                            </div>
-                        </div>
-                        <div class="collapse multi-collapse show" id="<?= $key ?>">
-                            <div class="card card-body mb-3">
-                                <div class="row g-3">
-
-                                    <?php foreach ($value['FILDS'] as $value2) { ?>
-                                        <div class="col-sm-2">
-                                            <label for="firstName" class="form-label"><?= $value2->name ?></label>
-                                            <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="firstName" value="<?= $value2->name ?>" required>
-                                        </div>
-                                    <?php } ?>
-
-
-                                    <div class="row col-12 mt-3">
-                                        <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">INSERT_INTO</label>
-                                            <textarea class="form-control" id="INSERT_INTO_<?= $key ?>" dir="ltr" name="INSERT_INTO[<?= $key ?>]" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">CREATE_TABLE</label>
-                                            <textarea class="form-control" id="CREATE_TABLE_<?= $key ?>" dir="ltr" name="CREATE_TABLE[<?= $key ?>]" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                <?php } ?>
-
-
-
-            </div>
-        </main>
-
-        <!-- <footer class="my-5 pt-5 text-muted text-center text-small">
-            <p class="mb-1">© 2017–2022 Company Name</p>
-            <ul class="list-inline">
-                <li class="list-inline-item"><a href="#">Privacy</a></li>
-                <li class="list-inline-item"><a href="#">Terms</a></li>
-                <li class="list-inline-item"><a href="#">Support</a></li>
-            </ul>
-        </footer> -->
-
-    </div>
-
 </body>
 
 </html>
