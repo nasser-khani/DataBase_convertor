@@ -369,7 +369,6 @@
         });
 
         function BASE_SQL() {
-            alert();
             var sql = '';
             $(".tables textarea").each(function() {
                 sql += editAreaLoader.getValue($(this).attr("id")); //$(this).val();
