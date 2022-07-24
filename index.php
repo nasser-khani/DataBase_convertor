@@ -1,102 +1,159 @@
-<?php
+<html lang="en">
 
-$options = array(
-    'db_host' => 'localhost',  //mysql host
-    'db_uname' => 'root',  //user
-    'db_password' => 'root', //pass
-    'db_to_backup' => 'wordpress', //database name
-    'db_exclude_tables' => array(), //tables to exclude
-    'db_backup_path' => './', //where to backup
-);
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test</title>
+    <link rel="fluid-icon" href="./fluidicon.png" title="GitHub">
 
-$DB = array();
-$mtables = array();
-$contents = "-- Database: `" . $options['db_to_backup'] . "` --\n\n";
-$DB_name = $contents;
+    <link href="./bootstrap.min.css" rel="stylesheet">
+</head>
 
-$mysqli = new mysqli($options['db_host'], $options['db_uname'], $options['db_password'], $options['db_to_backup']);
-if ($mysqli->connect_error) {
-    die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
-}
+<body class="bg-light" dir="rtl">
 
 
-$results = $mysqli->query("SHOW TABLES");
+    <?php
+    if (!isset($_GET['DB_NAME'])) {
+    ?>
 
-while ($row = $results->fetch_array()) {
-    if (!in_array($row[0], $options['db_exclude_tables'])) {
-        $mtables[] = $row[0];
+        <div class="container">
+            <main>
+                <div class="row g-5 mt-3">
+                    <div class="col-md-12">
+                        <form class="needs-validation" novalidate="">
+                            <div class="row g-3 d-flex align-items-center justify-content-center">
+                                <div class="col-sm-2">
+                                    <label class="form-label">هاست</label>
+                                    <input type="text" class="form-control" name="DB_HOST" value="localhost" placeholder="هاست" required>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="form-label">نام</label>
+                                    <input type="text" class="form-control" name="DB_NAME" value="wordpress" placeholder="نام" required>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="form-label">نام کاربری</label>
+                                    <input type="text" class="form-control" name="DB_USERNAME" value="root" placeholder="نام کاربری" required>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="form-label">رمز عبور</label>
+                                    <input type="text" class="form-control" name="DB_PASS" value="root" placeholder="رمز عبور" required>
+                                </div>
+                                <div class="col-sm-12 text-center">
+                                    <button class="btn btn-primary" type="submit">بررسی</button>
+                                </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+
+        </div>
+
+    <?php
+        return;
     }
-}
+    try {
 
-foreach ($mtables as $table) {
-    $DB[$table] = [];
+        $options = array(
+            'db_host' => $_GET['DB_HOST'],  //localhost
+            'db_uname' => $_GET['DB_USERNAME'],  //root
+            'db_password' => $_GET['DB_PASS'], //root
+            'db_to_backup' => $_GET['DB_NAME'], //wordpress  file name
+            'db_exclude_tables' => array(), //tables to exclude
+            'db_backup_path' => './', //where to backup
+        );
 
-    $contents .= "-- Table `" . $table . "` --\n";
+        $DB = array();
+        $mtables = array();
+        $contents = "-- Database: `" . $options['db_to_backup'] . "` --\n\n";
+        $DB_name = $contents;
 
-    $results = $mysqli->query("SHOW CREATE TABLE " . $table);
+        $mysqli = new mysqli($options['db_host'], $options['db_uname'], $options['db_password'], $options['db_to_backup']);
+    } catch (\Throwable $th) {
+        echo '<div class="alert alert-danger m-5" role="alert">خطایی رخ داده لطفا پس از بررسی مجددا امتحان نمایید  <a href="/">ادامه</></div>';
+        return;
+    }
+    if ($mysqli->connect_error) {
+        // die('Error : (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+    }
+
+    $results = $mysqli->query("SHOW TABLES");
+
     while ($row = $results->fetch_array()) {
-        $contents .= str_replace($table, $table, $row[1]) . ";\n\n";
-        $DB[$table]['CREATE_TABLE'] = str_replace($table, $table, $row[1]) . ";\n\n";
-    }
-
-    $results = $mysqli->query("SELECT * FROM " . $table);
-    $row_count = $results->num_rows;
-    $fields = $results->fetch_fields();
-
-    $DB[$table]['FILDS'] = $fields;
-
-    $fields_count = count($fields);
-
-    $insert_head = "INSERT INTO `" . $table . "` (";
-    for ($i = 0; $i < $fields_count; $i++) {
-        $insert_head  .= "`" . $fields[$i]->name . "`";
-        if ($i < $fields_count - 1) {
-            $insert_head  .= ', ';
+        if (!in_array($row[0], $options['db_exclude_tables'])) {
+            $mtables[] = $row[0];
         }
     }
-    $insert_head .=  ")";
-    $insert_head .= " VALUES\n";
 
-    if ($row_count > 0) {
-        $r = 0;
+    foreach ($mtables as $table) {
+        $DB[$table] = [];
+
+        $contents .= "-- Table `" . $table . "` --\n";
+
+        $results = $mysqli->query("SHOW CREATE TABLE " . $table);
         while ($row = $results->fetch_array()) {
-            if (($r % 400)  == 0) {
-                $contents_ = $insert_head;
-            }
-            $contents_ .= "(";
-            for ($i = 0; $i < $fields_count; $i++) {
-                $row_content =  str_replace("\n", "\\n", $mysqli->real_escape_string($row[$i]));
-
-                switch ($fields[$i]->type) {
-                    case 8:
-                    case 3:
-                        $contents_ .=  $row_content;
-                        break;
-                    default:
-                        $contents_ .= "'" . $row_content . "'";
-                }
-                if ($i < $fields_count - 1) {
-                    $contents_  .= ', ';
-                }
-            }
-            if (($r + 1) == $row_count || ($r % 400) == 399) {
-                $contents_ .= ");\n\n";
-            } else {
-                $contents_ .= "),\n";
-            }
-            $r++;
+            $contents .= str_replace($table, $table, $row[1]) . ";\n\n";
+            $DB[$table]['CREATE_TABLE'] = str_replace($table, $table, $row[1]) . ";\n\n";
         }
-        $contents .= $contents_;
-        $DB[$table]['INSERT_INTO'] = $contents_;
-    } else {
-        $DB[$table]['INSERT_INTO'] = '';
+
+        $results = $mysqli->query("SELECT * FROM " . $table);
+        $row_count = $results->num_rows;
+        $fields = $results->fetch_fields();
+
+        $DB[$table]['FILDS'] = $fields;
+
+        $fields_count = count($fields);
+
+        $insert_head = "INSERT INTO `" . $table . "` (";
+        for ($i = 0; $i < $fields_count; $i++) {
+            $insert_head  .= "`" . $fields[$i]->name . "`";
+            if ($i < $fields_count - 1) {
+                $insert_head  .= ', ';
+            }
+        }
+        $insert_head .=  ")";
+        $insert_head .= " VALUES\n";
+
+        if ($row_count > 0) {
+            $r = 0;
+            while ($row = $results->fetch_array()) {
+                if (($r % 400)  == 0) {
+                    $contents_ = $insert_head;
+                }
+                $contents_ .= "(";
+                for ($i = 0; $i < $fields_count; $i++) {
+                    $row_content =  str_replace("\n", "\\n", $mysqli->real_escape_string($row[$i]));
+
+                    switch ($fields[$i]->type) {
+                        case 8:
+                        case 3:
+                            $contents_ .=  $row_content;
+                            break;
+                        default:
+                            $contents_ .= "'" . $row_content . "'";
+                    }
+                    if ($i < $fields_count - 1) {
+                        $contents_  .= ', ';
+                    }
+                }
+                if (($r + 1) == $row_count || ($r % 400) == 399) {
+                    $contents_ .= ");\n\n";
+                } else {
+                    $contents_ .= "),\n";
+                }
+                $r++;
+            }
+            $contents .= $contents_;
+            $DB[$table]['INSERT_INTO'] = $contents_;
+        } else {
+            $DB[$table]['INSERT_INTO'] = '';
+        }
     }
-}
 
-// echo json_encode($DB['wp_users']);
-// return;
+    // echo json_encode($DB['wp_users']);
+    // return;
 
-/*
+    /*
 
     if (!is_dir($options['db_backup_path'])) {
         mkdir($options['db_backup_path'], 0777, true);
@@ -115,56 +172,41 @@ foreach ($mtables as $table) {
 */
 
 
-// try {
-//     $DBname = "wordpress";
-//     $DBuser = "root";
-//     $DBpass = "root";
-//     $host = 'localhost';
+    // try {
+    //     $DBname = "wordpress";
+    //     $DBuser = "root";
+    //     $DBpass = "root";
+    //     $host = 'localhost';
 
-//     $dbh = new PDO("mysql:host=$host;dbname=$DBname", $DBuser, $DBpass);
-//     $dbh->exec("set names utf8");
-// } catch (PDOException $error) {
-//     echo $error->getMessage();
-// }
+    //     $dbh = new PDO("mysql:host=$host;dbname=$DBname", $DBuser, $DBpass);
+    //     $dbh->exec("set names utf8");
+    // } catch (PDOException $error) {
+    //     echo $error->getMessage();
+    // }
 
-// // $data = $dbh->prepare("SELECT * FROM Sys.Tables");
-// // $data->execute();
-// // $data = $data->fetch();
+    // // $data = $dbh->prepare("SELECT * FROM Sys.Tables");
+    // // $data->execute();
+    // // $data = $data->fetch();
 
 
-// $database = $dbh->prepare("show tables");
-// $database->execute();
-// $database = $database->fetchAll(PDO::FETCH_COLUMN);
-// $data = [];
-// foreach ($database as $value) {
-//     $data[$value] = [];
+    // $database = $dbh->prepare("show tables");
+    // $database->execute();
+    // $database = $database->fetchAll(PDO::FETCH_COLUMN);
+    // $data = [];
+    // foreach ($database as $value) {
+    //     $data[$value] = [];
 
-//     // $data0 = $dbh->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME= '$value'");
-//     // foreach ($data0 as $value0) {
-//     //     $data[$value][] = $value0['COLUMN_NAME'];
-//     // }
-//     $data1 = $dbh->query("SELECT * FROM $value");
-//     foreach ($data1 as $key => $value1) {
-//         $data[$value][$key] = $value1;
-//     }
-// }
+    //     // $data0 = $dbh->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME= '$value'");
+    //     // foreach ($data0 as $value0) {
+    //     //     $data[$value][] = $value0['COLUMN_NAME'];
+    //     // }
+    //     $data1 = $dbh->query("SELECT * FROM $value");
+    //     foreach ($data1 as $key => $value1) {
+    //         $data[$value][$key] = $value1;
+    //     }
+    // }
 
-?>
-
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>test</title>
-    <link rel="fluid-icon" href="./fluidicon.png" title="GitHub">
-
-    <link href="./bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-light" dir="rtl">
-
+    ?>
     <div class="container">
         <main>
             <div class="py-5 text-center">
@@ -180,30 +222,35 @@ foreach ($mtables as $table) {
                             <div class="input-group w-50" dir="ltr">
                                 <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a>
                                 <span class="input-group-text btn btn-danger" title="حذف">X</span>
-                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" value="<?= $key ?>">
+                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" old_val="<?= $key ?>" value="<?= $key ?>">
                                 <span class="input-group-text"><?= $key ?></span>
                             </div>
                         </div>
-                        <div class="collapse multi-collapse show" id="<?= $key ?>">
+                        <div class="collapse multi-collapse show0" id="<?= $key ?>">
                             <div class="card card-body mb-3">
                                 <div class="row g-3">
 
                                     <?php foreach ($value['FILDS'] as $value2) { ?>
-                                        <div class="col-sm-2">
-                                            <label for="firstName" class="form-label"><?= $value2->name ?></label>
-                                            <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="firstName" value="<?= $value2->name ?>" required>
+
+                                        <div class="col-sm-3">
+                                            <div class="input-group" dir="ltr">
+                                                <span class="input-group-text btn btn-danger" title="حذف">X</span>
+                                                <input type="text" name="fild_name[<?= $key ?>][<?= $value2->name ?>]" class="form-control" id="" old_val="<?= $value2->name ?>" value="<?= $value2->name ?>" required>
+                                                <span class="input-group-text"><?= $value2->name ?></span>
+                                            </div>
                                         </div>
+
                                     <?php } ?>
 
 
                                     <div class="row col-12 mt-3">
                                         <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">INSERT_INTO</label>
-                                            <textarea class="form-control" id="INSERT_INTO_<?= $key ?>" dir="ltr" name="INSERT_INTO[<?= $key ?>]" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
+                                            <label for="" class="form-label">CREATE_TABLE</label>
+                                            <textarea class="form-control" id="CREATE_TABLE_<?= $key ?>" dir="ltr" name="CREATE_TABLE[<?= $key ?>]" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="firstName" class="form-label">CREATE_TABLE</label>
-                                            <textarea class="form-control" id="CREATE_TABLE_<?= $key ?>" dir="ltr" name="CREATE_TABLE[<?= $key ?>]" id="" rows="10" required><?= $value['CREATE_TABLE'] ?></textarea>
+                                            <label for="" class="form-label">INSERT_INTO</label>
+                                            <textarea class="form-control" id="INSERT_INTO_<?= $key ?>" dir="ltr" name="INSERT_INTO[<?= $key ?>]" id="" rows="10" required><?= $value['INSERT_INTO'] ?></textarea>
                                         </div>
                                     </div>
 
@@ -215,12 +262,13 @@ foreach ($mtables as $table) {
                 <?php } ?>
 
 
-                <div class="row col-sm-12">
-                    <label for="firstName" class="form-label">SQL</label>
+                <div class="row col-sm-12 d-none">
+                    <label for="" class="form-label">SQL</label>
                     <textarea class="form-control" id="ALL_SQL_" dir="ltr" name="ALL_SQL" id="" rows="20" required><?= $contents ?></textarea>
                 </div>
-                <div class="row m-5 d-flex align-items-end justify-content-end">
-                    <div class="row col-sm-2">
+
+                <div class="d-flex align-items-end justify-content-end">
+                    <div class="row col-sm-2 p-0">
                         <a class="btn btn-info save_file">ذخیره</a>
                     </div>
                 </div>
@@ -245,19 +293,61 @@ foreach ($mtables as $table) {
     <script language="Javascript" type="text/javascript" src="./edit_area/edit_area_full.js"></script>
 
     <script language="Javascript" type="text/javascript">
-        editAreaLoader.init({
-            id: "ALL_SQL_", // id of the textarea to transform		
-            start_highlight: true, // if start with highlight
-            allow_resize: "both",
-            allow_toggle: true,
-            word_wrap: false,
-            language: "fa",
-            syntax: "sql"
+        // editAreaLoader.init({
+        //     id: "ALL_SQL_", // id of the textarea to transform		
+        //     start_highlight: true, // if start with highlight
+        //     allow_resize: "both",
+        //     allow_toggle: true,
+        //     word_wrap: false,
+        //     language: "fa",
+        //     syntax: "sql"
+        // });
+
+        $("[data-bs-toggle]").click(function() {
+            if (!$(this).hasClass("opened")) {
+                $(this).closest(".tables").find("textarea").each(function() {
+                    var id = $(this).attr("id");
+                    editAreaLoader.init({
+                        id: id, // id of the textarea to transform		
+                        start_highlight: true, // if start with highlight
+                        allow_resize: "both",
+                        allow_toggle: true,
+                        word_wrap: false,
+                        language: "fa",
+                        syntax: "sql"
+                    });
+                });
+                $(this).addClass("opened");
+            }
         });
 
+        $(".tables input").change(function() {
+            var input_old_val = $(this).attr("old_val");
+            var input_val = $(this).val();
+            if (!input_val || !input_old_val) {
+                input_val = $(this).attr("value");
+                $(this).val(input_val);
+            }
+            $(this).closest(".tables").find("textarea").each(function() {
+                var textarea_val = $(this).val().replaceAll(input_old_val, input_val)
+                $(this).val(textarea_val);
+            });
+            $(this).attr("old_val", input_val);
+
+
+            var sql = '';
+            $(".tables textarea").each(function() {
+                sql += $(this).val();
+            });
+            $("#ALL_SQL_").val(sql);
+        });
+
+
         $(".save_file").click(function() {
+            // $("body").append('<div class="d-flex align-items-center justify-content-center" id="loading">در حال بارگیری ... </div>');
+            const sql = $("#ALL_SQL_").val(); //editAreaLoader.getValue("ALL_SQL_");
             const d = new Date();
-            download("<?= $options['db_to_backup'] ?>_" + d + ".sql", editAreaLoader.getValue("ALL_SQL_"));
+            download("<?= $options['db_to_backup'] ?>_" + d + ".sql", sql);
         });
 
         function download(filename, text) {
@@ -268,68 +358,6 @@ foreach ($mtables as $table) {
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
-        }
-
-
-        // callback functions
-        function my_save(id, content) {
-            alert("Here is the content of the EditArea '" + id + "' as received by the save callback function:\n" + content);
-        }
-
-        function my_load(id) {
-            editAreaLoader.setValue(id, "The content is loaded from the load_callback function into EditArea");
-        }
-
-        function test_setSelectionRange(id) {
-            editAreaLoader.setSelectionRange(id, 100, 150);
-        }
-
-        function test_getSelectionRange(id) {
-            var sel = editAreaLoader.getSelectionRange(id);
-            alert("start: " + sel["start"] + "\nend: " + sel["end"]);
-        }
-
-        function test_setSelectedText(id) {
-            text = "[REPLACED SELECTION]";
-            editAreaLoader.setSelectedText(id, text);
-        }
-
-        function test_getSelectedText(id) {
-            alert(editAreaLoader.getSelectedText(id));
-        }
-
-        function editAreaLoaded(id) {
-            if (id == "example_2") {
-                open_file1();
-                open_file2();
-            }
-        }
-
-        function open_file1() {
-            var new_file = {
-                id: "to\\ é # € to",
-                text: "$authors= array();\n$news= array();",
-                syntax: 'php',
-                title: 'beautiful title'
-            };
-            editAreaLoader.openFile('example_2', new_file);
-        }
-
-        function open_file2() {
-            var new_file = {
-                id: "Filename",
-                text: "<a href=\"toto\">\n\tbouh\n</a>\n<!-- it's a comment -->",
-                syntax: 'html'
-            };
-            editAreaLoader.openFile('example_2', new_file);
-        }
-
-        function close_file1() {
-            editAreaLoader.closeFile('example_2', "to\\ é # € to");
-        }
-
-        function toogle_editable(id) {
-            editAreaLoader.execCommand(id, 'set_editable', !editAreaLoader.execCommand(id, 'is_editable'));
         }
     </script>
 </body>
