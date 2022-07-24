@@ -221,11 +221,15 @@
                 <?php foreach ($DB as $key => $value) { ?>
                     <div class="card tables">
                         <div class="row card-title p-2">
-                            <div class="input-group w-50" dir="ltr">
-                                <!-- <a class="me-3" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">نمایش جزئیات</a> -->
-                                <span class="input-group-text btn btn-danger remove_table" title="حذف">X</span>
-                                <input type="text" name="table_name[<?= $key ?>]" class="form-control" old_val="<?= $key ?>" value="<?= $key ?>">
-                                <span class="input-group-text"><?= $key ?></span>
+                            <div class="col-6">
+                                <div class="input-group" dir="ltr">
+                                    <span class="input-group-text btn btn-danger remove_table" title="حذف">X</span>
+                                    <input type="text" name="table_name[<?= $key ?>]" class="form-control" old_val="<?= $key ?>" value="<?= $key ?>">
+                                    <span class="input-group-text"><?= $key ?></span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <a class="me-3 float-start" data-bs-toggle="collapse" href="#<?= $key ?>" role="button">جزئیات</a>
                             </div>
                         </div>
                         <div class="collapse multi-collapse show" id="<?= $key ?>">
@@ -280,6 +284,7 @@
                             word_wrap: false,
                             language: "fa",
                             syntax: "sql",
+                            EA_load_callback: "collapse_this",
                             change_callback: "BASE_SQL"
                         });
                     </script>
@@ -392,6 +397,10 @@
             element.click();
             document.body.removeChild(element);
         }
+
+        function collapse_this(id) {
+            $("#" + id).closest(".collapse").collapse('hide');
+        };
     </script>
 </body>
 
